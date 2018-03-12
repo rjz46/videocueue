@@ -1,8 +1,6 @@
 
 <!DOCTYPE html>
 <html>
-
-
 <head>
 	
 	<title>Queue Demo</title>
@@ -19,30 +17,30 @@
 	}
 </style>
 <body>
-
-	<?php
-		require_once 'includes/config.php';
-			$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
-			if( $mysqli->connect_errno ) {
-				echo "<p>$mysqli->connect_error<p>";
-				die( "Couldn't connect to database");
-			}
-	?>
 	
 	<div class="container">
 		<hr>
 
 		<div class = "row">
-			<form action="index.php" method="post">
+			<form action="update.php" method="post" id="form1">
 				<fieldset class="col-sm" id="Jim">
 					<div class="btn-group" role="group">
-				  		<input type="button" name="name" class="btn btn-outline-success add" value="Jim" onclick="add(this)"/>
+				  		<input type="button" name="name" class="btn btn-outline-success add" value="Jim" onclick="return add(this)"/>
 					</div>
 					<div class="btn-group" role="group">
-				  		<input type="button" name="name" class="btn btn-outline-success add" value="Ru" onclick="add(this)"/>
+				  		<input type="button" name="name" class="btn btn-outline-success add" value="Ru" onclick="return add(this)"/>
 					</div>
 					<div class="btn-group" role="group">
-						<input type="button" name="name" class="btn btn-outline-success add" value="Luping" onclick="add(this)"/>
+						<input type="button" name="name" class="btn btn-outline-success add" value="Luping" onclick="return add(this)"/>
+					</div>
+					<div class="btn-group" role="group">
+						<input type="button" name="name" class="btn btn-outline-success add" value="Liye" onclick="return add(this)"/>
+					</div>
+					<div class="btn-group" role="group">
+						<input type="button" name="name" class="btn btn-outline-success add" value="Elise" onclick="return add(this)"/>
+					</div>
+					<div class="btn-group" role="group">
+						<input type="button" name="name" class="btn btn-outline-success add" value="Paula" onclick="return add(this)"/>
 					</div>
 				</fieldset>
 			</form>
@@ -54,7 +52,7 @@
 			<ul class="list-group queue">
 			 	<li class="list-group-item justify-content-between"> 
 			 	hello
-			 	<span class="badge badge-default badge-pill"><button type="button" class="btn btn-outline-danger remove">Remove</button></span>
+			 	<span class="badge badge-default badge-pill"><input type="button" name ="hello" value="Remove" class="btn btn-outline-danger remove" /></span>
 			 	</li>
 			</ul>
 		</div>
@@ -67,42 +65,47 @@
 	<script>
 		function add(val){
     		var user = val.value;
-    		console.log(user);
+    		console.log("add " + user);
     		alert($( ".queue li" ).last().html());
-				$(".queue").append("<li class='list-group-item justify-content-between'>"+user+"<span class='badge badge-default badge-pill'><button type='button' class='btn btn-outline-danger remove'>Remove</button></span></li>");		
-	
-			<?php
 
-
-				$name = $_POST['name'];
-				$lim = 1;
-
-				$stmt = $mysqli->prepare("SELECT * FROM queue ORDER BY ind DESC LIMIT ?;");
-				$stmt->bind_param('i', $lim);
-				$stmt->execute();
-				$result = $stmt->get_result();
-				$row = $result->fetch_assoc();
-				$ind = $row['ind']+1;
-
-				$stmt1 = $mysqli->prepare("INSERT INTO queue (person, ind) VALUES (?, ?);");
-				$stmt1->bind_param('si', $name, $ind) ;
-
-				$stmt1->execute();
-				
-				$mysqli->close();
-
-				$_POST['name']="";
-			?>	
+				$(".queue").append("<li class='list-group-item justify-content-between'>"+user+"<span class='badge badge-default badge-pill'><input type='button' name ='"+user+"' value='Remove' class='btn btn-outline-danger remove'/></span></li>");		
+			$.ajax({
+		        type: "POST",
+		        url: "updateAdd.php",
+		        data: {"name": user},
+		        success:function(){console.log("successful add")}
+	        });
 		};
+
+		function remove(val){
+			var user = val.name;
+			console.log("remove " + user);
+
+			$.ajax({
+		        type: "POST",
+		        url: "updateRemove.php",
+		        data: {"name": user},
+		        success:function(){console.log("successful remove")}
+	        });
+		}
+		function next(){
+			$.ajax({
+		        type: "POST",
+		        url: "updateNext.php",
+		        success:function(){console.log("successful next")}
+	        });
+		}
 
 
 		$(document).on( "click", '.remove', function() {
   			$(this).parent().parent().detach();
+  			remove(this);
 		});
 
 		//remove first
 		$( "#next" ).click(function() {
   			$( ".queue li" ).first().remove();
+  			next();
 		});
 
 		//add contraint, person cannot add himself/herself twice
