@@ -9,6 +9,15 @@
   	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 
+	<script src="/socket.io/socket.io.js"></script>
+	<script>
+	  var socket = io('http://localhost');
+	  socket.on('news', function (data) {
+	    console.log(data);
+	    socket.emit('my other event', { my: 'data' });
+	  });
+	</script>
+      
 </head>
 
 <style>
@@ -50,10 +59,10 @@
 		<hr>
 		<div class="container">
 			<ul class="list-group queue">
-			 	<li class="list-group-item justify-content-between"> 
+			 	<!--li class="list-group-item justify-content-between"> 
 			 	hello
 			 	<span class="badge badge-default badge-pill"><input type="button" name ="hello" value="Remove" class="btn btn-outline-danger remove" /></span>
-			 	</li>
+			 	</li-->
 			</ul>
 		</div>
 
@@ -66,9 +75,16 @@
 		function add(val){
     		var user = val.value;
     		console.log("add " + user);
-    		alert($( ".queue li" ).last().html());
+    		var myuser = $( ".queue li" ).last().attr('name');
 
-				$(".queue").append("<li class='list-group-item justify-content-between'>"+user+"<span class='badge badge-default badge-pill'><input type='button' name ='"+user+"' value='Remove' class='btn btn-outline-danger remove'/></span></li>");		
+    		if(user == myuser)
+    		{
+    			alert("cannot add again, please wait");
+    		}else{
+				$(".queue").append("<li class='list-group-item justify-content-between' name ='"+user+"'>"+user+"<span class='badge badge-default badge-pill'><input type='button' name ='"+user+"' value='Remove' class='btn btn-outline-danger remove'/></span></li>");		
+			}		
+
+
 			$.ajax({
 		        type: "POST",
 		        url: "updateAdd.php",
