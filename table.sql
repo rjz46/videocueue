@@ -3,18 +3,12 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:8888
--- Generation Time: Mar 07, 2018 at 08:58 PM
+-- Generation Time: Mar 13, 2018 at 06:34 PM
 -- Server version: 5.6.34
 -- PHP Version: 5.6.28
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
-
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
 
 --
 -- Database: `CMC`
@@ -36,7 +30,12 @@ CREATE TABLE `queue` (
 --
 
 INSERT INTO `queue` (`person`, `ind`) VALUES
-('Ru', 0);
+('Jim', 1),
+('Ru', 2),
+('Luping', 3),
+('Liye', 4),
+('Elise', 5),
+('Paula', 6);
 
 --
 -- Indexes for dumped tables
@@ -47,7 +46,3 @@ INSERT INTO `queue` (`person`, `ind`) VALUES
 --
 ALTER TABLE `queue`
   ADD PRIMARY KEY (`ind`);
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

@@ -124,8 +124,6 @@
   			next();
 		});
 
-		//add contraint, person cannot add himself/herself twice
-
 
 	</script>
 
