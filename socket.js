@@ -22,4 +22,14 @@ io.on('connection', function (socket) {
   socket.on('my other event', function (data) {
     console.log(data);
   });
+
+  socket.on('add', function (data) {
+    console.log(data);
+    socket.broadcast.emit('whatsgoingon');
+  });
+
+  socket.on('remove', function (data) {
+    console.log(data);
+  });
+
 });

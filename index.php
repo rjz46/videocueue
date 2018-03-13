@@ -8,22 +8,35 @@
 	<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
   	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-
-	<script src="/socket.io/socket.io.js"></script>
-	<script>
-	  var socket = io('http://localhost');
-	  socket.on('news', function (data) {
-	    console.log(data);
-	    socket.emit('my other event', { my: 'data' });
-	  });
-	</script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
       
+
+	<script>
+		var socket = io('http://localhost:80');
+
+  		socket.on('whatsgoingon', function (data) {
+			console.log("received");
+			//socket.emit('add', { my: 'data' });
+		});
+	</script>
+
 </head>
 
 <style>
 	button .remove{
     	text-align: right;
 	}
+
+	body, html
+	{
+		background-repeat: no-repeat;
+    	background-image: linear-gradient(rgb(104, 145, 162), rgb(12, 97, 33));
+    	height: 100%;
+    }
+
+    .badge {
+    	float: right;
+    }
 </style>
 <body>
 	
@@ -72,6 +85,7 @@
 
 
 	<script>
+
 		function add(val){
     		var user = val.value;
     		console.log("add " + user);
@@ -81,7 +95,7 @@
     		{
     			alert("cannot add again, please wait");
     		}else{
-				$(".queue").append("<li class='list-group-item justify-content-between' name ='"+user+"'>"+user+"<span class='badge badge-default badge-pill'><input type='button' name ='"+user+"' value='Remove' class='btn btn-outline-danger remove'/></span></li>");		
+				$(".queue").append("<li class='list-group-item justify-content-between' name ='"+user+"'><span>"+user+"</span><span class='badge badge-default badge-pill'><input type='button' name ='"+user+"' value='Remove' class='btn btn-outline-danger remove'/></span></li>");		
 			}		
 
 
@@ -91,6 +105,9 @@
 		        data: {"name": user},
 		        success:function(){console.log("successful add")}
 	        });
+
+	        socket.emit('add', { username: user });
+
 		};
 
 		function remove(val){
@@ -104,6 +121,7 @@
 		        success:function(){console.log("successful remove")}
 	        });
 		}
+
 		function next(){
 			$.ajax({
 		        type: "POST",
@@ -116,6 +134,9 @@
 		$(document).on( "click", '.remove', function() {
   			$(this).parent().parent().detach();
   			remove(this);
+
+  			socket.emit('remove', { username: remove });
+
 		});
 
 		//remove first
