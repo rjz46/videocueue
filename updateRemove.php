@@ -7,7 +7,7 @@
 		}
 	$name = $_POST['name'];
 
-	$stmt = $mysqli->prepare("DELETE FROM queue WHERE person = ?;");
+	/**$stmt = $mysqli->prepare("DELETE FROM queue WHERE person = ?;");
 	$stmt->bind_param('s', $name);
 	$stmt->execute();
 
@@ -27,9 +27,24 @@
 			$stmt2->execute();
 		}
 			
-	};
+	};**/
 
+	$lim = 1;
+	$stmt2 = $mysqli->prepare("SELECT * FROM queue WHERE removed IS NULL AND person = ? ORDER BY ind ASC LIMIT ?;");
+	$stmt2->bind_param('si', $name, $lim);
+	$stmt2->execute();
+	$result2 = $stmt2->get_result();
+	$num_rows = $stmt2->fetch();
 
+	if ( $result2 && count($num_rows) == 1 ) {
+		$row = $result2->fetch_assoc();
+
+		$ind = $row['ind'];
+	}
+
+	$stmt3 = $mysqli->prepare("UPDATE queue SET removed = CURRENT_TIMESTAMP WHERE ind = ?");
+	$stmt3->bind_param('i', $ind);
+	$stmt3->execute();
 
 	$mysqli->close();
 

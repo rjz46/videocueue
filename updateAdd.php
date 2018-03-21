@@ -22,7 +22,7 @@
 		$row = $result->fetch_assoc();
 		$ind = $row['ind']+1;
 
-		$stmt1 = $mysqli->prepare("INSERT INTO queue (person, ind) VALUES (?, ?);");
+		$stmt1 = $mysqli->prepare("INSERT INTO queue (person, ind, added) VALUES (?, ?, CURRENT_TIMESTAMP);");
 		$stmt1->bind_param('si', $name, $ind) ;
 
 		$stmt1->execute();
