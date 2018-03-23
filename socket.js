@@ -25,6 +25,8 @@ io.on('connection', function (socket) {
 
   socket.on('add', function (data) {
     console.log(data);
+    socket.emit('news', { hello: 'world' });
+
     socket.broadcast.emit('whatsgoingon');
   });
 
