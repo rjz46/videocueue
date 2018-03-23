@@ -14,10 +14,14 @@
 	<script>
 		var socket = io('http://localhost:80');
 
-  		socket.on('whatsgoingon', function (data) {
-			console.log("received");
-			//socket.emit('add', { my: 'data' });
-		});
+
+  		socket.on('connection', function (data) {
+			//socket.on('news', function (data) {
+    			console.log("stuff");
+  			//socket.emit('my other event', { my: 'data' });
+  			//});
+  		});
+
 	</script>
 
 </head>
@@ -30,7 +34,6 @@
 	body, html
 	{
 		background-repeat: no-repeat;
-    	background-image: linear-gradient(rgb(104, 145, 162), rgb(12, 97, 33));
     	height: 100%;
     }
 
