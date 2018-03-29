@@ -2,7 +2,7 @@ var app = require('http').createServer(handler)
 var io = require('socket.io')(app);
 var fs = require('fs');
 
-app.listen(80);
+app.listen(3000);
 
 function handler (req, res) {
   fs.readFile(__dirname + '/index.html',
@@ -18,16 +18,21 @@ function handler (req, res) {
 }
 
 io.on('connection', function (socket) {
-  socket.emit('news', { hello: 'world' });
+  console.log('a user connected');
+
+  socket.broadcast.emit('news', { hello: 'world' });
+
+  //socket.broadcast.emit('chat message', "hello");
+
   socket.on('my other event', function (data) {
     console.log(data);
   });
 
   socket.on('add', function (data) {
-    console.log(data);
-    socket.emit('news', { hello: 'world' });
+    //io.emit('chat message', data);
 
-    socket.broadcast.emit('whatsgoingon');
+    console.log(data);
+    socket.broadcast.emit('news', { hello: 'world' });
   });
 
   socket.on('remove', function (data) {

@@ -12,16 +12,28 @@
       
 
 	<script>
-		var socket = io('http://localhost:80');
+
+		/*$(function () {
+
+			var socket = io('http://ec2-54-183-146-210.us-west-1.compute.amazonaws.com:3000');
 
 
-  		socket.on('connection', function (data) {
-			//socket.on('news', function (data) {
-    			console.log("stuff");
-  			//socket.emit('my other event', { my: 'data' });
-  			//});
-  		});
+	  		socket.on('connection', function (data) {
+	  			//console.log("what the hell");
+				socket.on('whatsgoingon', function (data) {
+	    			console.log("stuff");
+	  				//socket.emit('my other event', { my: 'data' });
+	  			});
+	  		});
 
+  		//});
+  		*/
+		var socket = io('http://ec2-54-183-146-210.us-west-1.compute.amazonaws.com:3000');
+		socket.on('news', function (data) {
+			console.log(data);
+			socket.emit('my other event', { my: 'data' });
+		});
+		
 	</script>
 
 </head>
@@ -88,7 +100,18 @@
 
 
 	<script>
-		//testing git server
+
+		/*var socket = io('http://ec2-54-183-146-210.us-west-1.compute.amazonaws.com:3000');
+
+  		socket.on('connection', function (data) {
+  			console.log("what the hell");
+			socket.on('chat message', function (data) {
+    			console.log("stuff");
+  				//socket.emit('my other event', { my: 'data' });
+  			});
+  		});*/
+
+		//testing give me permission
 		function add(val){
     		var user = val.value;
     		console.log("add " + user);
