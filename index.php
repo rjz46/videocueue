@@ -1,4 +1,6 @@
 
+<?php $username = $_GET['name']; ?>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -12,28 +14,8 @@
       
 
 	<script>
-
-		/*$(function () {
-
-			var socket = io('http://ec2-54-183-146-210.us-west-1.compute.amazonaws.com:3000');
-
-
-	  		socket.on('connection', function (data) {
-	  			//console.log("what the hell");
-				socket.on('whatsgoingon', function (data) {
-	    			console.log("stuff");
-	  				//socket.emit('my other event', { my: 'data' });
-	  			});
-	  		});
-
-  		//});
-  		*/
+		var username = "<?php echo $username; ?>";
 		var socket = io('http://ec2-54-183-146-210.us-west-1.compute.amazonaws.com:3000');
-		socket.on('news', function (data) {
-			console.log(data);
-			socket.emit('my other event', { my: 'data' });
-		});
-		
 	</script>
 
 </head>
@@ -52,6 +34,7 @@
     .badge {
     	float: right;
     }
+
 </style>
 <body>
 	
@@ -62,28 +45,17 @@
 			<form action="update.php" method="post" id="form1">
 				<fieldset class="col-sm" id="Jim">
 					<div class="btn-group" role="group">
-				  		<input type="button" name="name" class="btn btn-outline-success add" value="Jim" onclick="return add(this)"/>
+				  		<input type="button" name="name" class="btn btn-outline-success" value="Add" onclick="return send_add();"/>
+
 					</div>
-					<div class="btn-group" role="group">
-				  		<input type="button" name="name" class="btn btn-outline-success add" value="Ru" onclick="return add(this)"/>
-					</div>
-					<div class="btn-group" role="group">
-						<input type="button" name="name" class="btn btn-outline-success add" value="Luping" onclick="return add(this)"/>
-					</div>
-					<div class="btn-group" role="group">
-						<input type="button" name="name" class="btn btn-outline-success add" value="Liye" onclick="return add(this)"/>
-					</div>
-					<div class="btn-group" role="group">
-						<input type="button" name="name" class="btn btn-outline-success add" value="Elise" onclick="return add(this)"/>
-					</div>
-					<div class="btn-group" role="group">
-						<input type="button" name="name" class="btn btn-outline-success add" value="Paula" onclick="return add(this)"/>
-					</div>
+
+						<button type="button" id="next" class="btn btn-outline-primary">Pass</button>
+
 				</fieldset>
 			</form>
 		
 		</div>
-
+		<span class="glyphicon glyphicon-asterisk"></span>
 		<hr>
 		<div class="container">
 			<ul class="list-group queue">
@@ -95,48 +67,68 @@
 		</div>
 
 		<hr>
-		<button type="button" id="next" class="btn btn-outline-primary">Next Person</button>
 	</div>
 
 
 	<script>
 
-		/*var socket = io('http://ec2-54-183-146-210.us-west-1.compute.amazonaws.com:3000');
+		//add
+		socket.on('plus', function (data) {
+			receive_add(data);
+		
+		});
 
-  		socket.on('connection', function (data) {
-  			console.log("what the hell");
-			socket.on('chat message', function (data) {
-    			console.log("stuff");
-  				//socket.emit('my other event', { my: 'data' });
-  			});
-  		});*/
+		function send_add(){
+			socket.emit('add', { username: username });
+		}
 
-		//testing give me permission
-		function add(val){
-    		var user = val.value;
-    		console.log("add " + user);
+		function receive_add(data){
+    		var user = data.username;    		
     		var myuser = $( ".queue li" ).last().attr('name');
 
     		if(user == myuser)
     		{
     			alert("cannot add again, please wait");
     		}else{
-				$(".queue").append("<li class='list-group-item justify-content-between' name ='"+user+"'><span>"+user+"</span><span class='badge badge-default badge-pill'><input type='button' name ='"+user+"' value='Remove' class='btn btn-outline-danger remove'/></span></li>");		
-			}		
+				
+				if(user == username)
+				{
+					var newLI = "<li id ='"+data.queue_index+"' class='list-group-item justify-content-between' name ='"+user+"'><span>"+user+"</span><span class='badge badge-default badge-pill '><input type='button' name ='"+user+"' value='Remove' class='btn btn-outline-danger remove'/></span></span></li>";
 
+				 	$(".queue").append(newLI);
 
-			$.ajax({
-		        type: "POST",
-		        url: "updateAdd.php",
-		        data: {"name": user},
-		        success:function(){console.log("successful add")}
-	        });
+  					setTimeout(function() {
+   						newLI.className = newLI.className + " show";
+  					}, 10);
 
-	        socket.emit('add', { username: user });
+				}else{
+
+					$(".queue").append("<li id ='"+data.queue_index+"' class='list-group-item justify-content-between' name ='"+user+"'><span>"+user+"</span></li>");
+				}
+
+				$.ajax({
+			        type: "POST",
+			        url: "updateAdd.php",
+			        data: {"name": user},
+			        success:function(){console.log("successful add")}
+		        });
+
+	    		console.log("add " + user);
+	    	}
 
 		};
 
-		function remove(val){
+		//remove
+		socket.on('minus', function (data) {
+			console.log(data);
+			$("#"+data).remove();
+		});
+
+		function send_remove(val){
+			socket.emit('remove', { queueindex: queueindex });
+		}
+
+		function receive_remove(val){
 			var user = val.name;
 			console.log("remove " + user);
 
@@ -148,6 +140,17 @@
 	        });
 		}
 
+		$(document).on( "click", '.remove', function() {
+  			//$(this).parent().parent().detach();
+  			//remove(this);
+
+  			queue_index = $(this).parent().parent().attr('id');
+  			socket.emit('remove', queue_index);
+
+		});
+
+
+		//next
 		function next(){
 			$.ajax({
 		        type: "POST",
@@ -156,20 +159,20 @@
 	        });
 		}
 
-
-		$(document).on( "click", '.remove', function() {
-  			$(this).parent().parent().detach();
-  			remove(this);
-
-  			socket.emit('remove', { username: remove });
-
-		});
-
 		//remove first
 		$( "#next" ).click(function() {
   			$( ".queue li" ).first().remove();
   			next();
 		});
+
+
+		function send_pass(val){
+			socket.emit('pass', { username: username });
+		}
+
+		function send_jump(val){
+			socket.emit('jump', { username: username });
+		}
 
 
 	</script>

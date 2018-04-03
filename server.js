@@ -17,26 +17,34 @@ function handler (req, res) {
   });
 }
 
+var queue_index = 0;
+
 io.on('connection', function (socket) {
+  
   console.log('a user connected');
 
-  socket.broadcast.emit('news', { hello: 'world' });
-
-  //socket.broadcast.emit('chat message', "hello");
-
-  socket.on('my other event', function (data) {
-    console.log(data);
-  });
 
   socket.on('add', function (data) {
-    //io.emit('chat message', data);
-
     console.log(data);
-    socket.broadcast.emit('news', { hello: 'world' });
+
+    data.queue_index = queue_index;
+    io.emit('plus', data);
+
+    queue_index++;
+
+    //queue.push(data);
+    //console.log(queue);
   });
 
   socket.on('remove', function (data) {
     console.log(data);
+
+    io.emit('minus', data );
+  });
+
+  socket.on('jump', function (data) {
+    console.log(data);
+    io.emit('jump', { data });
   });
 
 });
