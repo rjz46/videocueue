@@ -12,6 +12,8 @@
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
       
+	<script defer src="https://use.fontawesome.com/releases/v5.0.9/js/all.js" integrity="sha384-8iPTk2s/jMVj81dnzb/iFR2sdA7u06vHJyyLlAd4snFpCl/SnyUjRrbdJsw1pGIl" crossorigin="anonymous"></script>
+
 
 	<script>
 		var username = "<?php echo $username; ?>";
@@ -35,29 +37,74 @@
     	float: right;
     }
 
+    h3 {
+    	padding-top: 10px;
+    	text-align: center;
+    }
+
+    .container {
+    	height:100%;
+    	border: 2px solid #73AD21;
+   		border-radius: 5px;
+    }
+
+    #top {
+	    padding: 20px; 
+	    height: 20%; 
+	}
+
+    #bottom {
+	    padding: 20px; 
+	    height: 80%; 
+	    background: white;
+		border-radius: 30px;
+	}
+
+	.queue
+	{
+		border-radius: 5px;
+		background: white;
+	}
+
+	.mytext
+	{
+		height: 50px;
+		display: inline-block;
+  		vertical-align: middle;
+	}
 </style>
 <body>
-	
+
 	<div class="container">
-		<hr>
-
-		<div class = "row">
-			<form action="update.php" method="post" id="form1">
-				<fieldset class="col-sm" id="Jim">
-					<div class="btn-group" role="group">
-				  		<input type="button" name="name" class="btn btn-outline-success" value="Add" onclick="return send_add();"/>
-
-					</div>
-
-						<button type="button" id="next" class="btn btn-outline-primary">Pass</button>
-
-				</fieldset>
-			</form>
 		
+		<div id="top">
+
+			<h3>Video Conference Queue Cue Support</h3>
+
+			<hr>
+
+			<div class = "row">
+				<div class="col">
+					<div>
+						<i class="fas fa-address-card" style="font-size:45px"></i>
+						<span class='mytext'><?php echo $username; ?></span>
+					</div>
+				</div>
+				<div class="col">
+					<form action="update.php" method="post" id="form1">
+						<div style="float:right;" class="btn-group" role="group">
+					  		<button type="button" name="name" class="btn btn-outline-success" onclick="return send_add();"><i class="fas fa-angle-up"></i></button>
+					  		<button type="button" name="name" class="btn btn-outline-success" onclick="return send_add();"><i class="fas fa-angle-double-up"></i></button>
+							<button type="button" id="next" class="btn btn-outline-primary"><i class="fas fa-angle-down"></i></button>
+						</div>
+					</form>
+				</div>
+			</div>
+		
+			<hr>
+
 		</div>
-		<span class="glyphicon glyphicon-asterisk"></span>
-		<hr>
-		<div class="container">
+		<div id="bottom">
 			<ul class="list-group queue">
 			 	<!--li class="list-group-item justify-content-between"> 
 			 	hello
@@ -65,10 +112,40 @@
 			 	</li-->
 			</ul>
 		</div>
-
-		<hr>
 	</div>
 
+
+	<div class="modal fade" id="repeat" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title" id="exampleModalLabel">Error</h5>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+		     <p>You cannot add yourself twice in a row. Please wait for another user.</p>  
+	      </div>
+	    </div>
+	  </div>
+	</div>
+
+	<div class="modal fade" id="pass" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title" id="exampleModalLabel">Error</h5>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+		     <p>You cannot pass another user's turn.</p>  
+	      </div>
+	    </div>
+	  </div>
+	</div>
 
 	<script>
 
@@ -79,7 +156,15 @@
 		});
 
 		function send_add(){
-			socket.emit('add', { username: username });
+			var user = username;
+			var myuser = $( ".queue li" ).last().attr('name');
+
+    		if(user == myuser)
+    		{
+    			$("#repeat").modal("show");
+    		}else{
+				socket.emit('add', { username: username });
+			}
 		}
 
 		function receive_add(data){
@@ -93,7 +178,7 @@
 				
 				if(user == username)
 				{
-					var newLI = "<li id ='"+data.queue_index+"' class='list-group-item justify-content-between' name ='"+user+"'><span>"+user+"</span><span class='badge badge-default badge-pill '><input type='button' name ='"+user+"' value='Remove' class='btn btn-outline-danger remove'/></span></span></li>";
+					var newLI = "<li id ='"+data.queue_index+"' class='list-group-item justify-content-between' name ='"+user+"'><span class = 'mytext'>"+user+"</span><span class='badge badge-default badge-pill '><button name ='"+user+"' value='Remove' class='btn btn-outline-danger remove'><i class='fas fa-ban'></i></button></span></span></li>";
 
 				 	$(".queue").append(newLI);
 
@@ -103,7 +188,7 @@
 
 				}else{
 
-					$(".queue").append("<li id ='"+data.queue_index+"' class='list-group-item justify-content-between' name ='"+user+"'><span>"+user+"</span></li>");
+					$(".queue").append("<li id ='"+data.queue_index+"' class='list-group-item justify-content-between' name ='"+user+"'><span class = 'mytext'>"+user+"</span></li>");
 				}
 
 				$.ajax({
@@ -161,13 +246,25 @@
 
 		//remove first
 		$( "#next" ).click(function() {
-  			$( ".queue li" ).first().remove();
-  			next();
+  			//$( ".queue li" ).first().remove();
+  			first_to_his_name = $( ".queue li" ).first();
+  			var user = first_to_his_name.attr('name');
+
+  			if(username != user)
+    		{
+    			$("#pass").modal("show");
+    		}else{
+					
+	  			queue_index = first_to_his_name.attr('id');
+	  			socket.emit('remove', queue_index);
+
+	  			next();
+	  		}
 		});
 
 
 		function send_pass(val){
-			socket.emit('pass', { username: username });
+			socket.emit('pass');
 		}
 
 		function send_jump(val){
