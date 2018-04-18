@@ -94,7 +94,7 @@
 					<form action="update.php" method="post" id="form1">
 						<div style="float:right;" class="btn-group" role="group">
 					  		<button type="button" name="name" class="btn btn-outline-success" onclick="return send_add();"><i class="fas fa-angle-up"></i></button>
-					  		<button type="button" name="name" class="btn btn-outline-success" onclick="return send_add();"><i class="fas fa-angle-double-up"></i></button>
+					  		<button type="button" name="name" class="btn btn-outline-success" onclick="return request_jump();"><i class="fas fa-angle-double-up"></i></button>
 							<button type="button" id="next" class="btn btn-outline-primary"><i class="fas fa-angle-down"></i></button>
 						</div>
 					</form>
@@ -146,6 +146,26 @@
 	    </div>
 	  </div>
 	</div>
+
+
+	<!--button class="btn btn-default" id="btn-confirm">Confirm</button>
+
+	<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true" id="mi-modal">
+	  <div class="modal-dialog modal-sm">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	        <h4 class="modal-title" id="myModalLabel">Confirm</h4>
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-default" id="modal-btn-si">Yes</button>
+	        <button type="button" class="btn btn-primary" id="modal-btn-no">No</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+
+	<div class="alert" role="alert" id="result"></div-->
 
 	<script>
 
@@ -267,9 +287,95 @@
 			socket.emit('pass');
 		}
 
-		function send_jump(val){
-			socket.emit('jump', { username: username });
+		//jump
+		socket.on('request_jump', function (data) {
+			receive_request(data);
+		});
+
+		function request_jump(){
+			socket.emit('request_jump', { username: username });
 		}
+
+		socket.on('respond_jump', function (data) {
+			receive_request(data);
+		});
+
+		function receive_request(data)
+		{
+			var answer = confirm(data.username + " has requested to speak next.");
+			/*if (answer) {
+			    socket.emit('respond_jump', { username: username });
+
+			}
+			else {
+			    socket.emit('respond_jump', { username: username });
+			}*/
+			data.response = answer;
+			send_response(data);
+
+		}
+
+		function send_response(data)
+		{
+			socket.emit('respond_jump', data);
+		}
+
+		socket.on('response', function (data) {
+			receive_response(data);
+		});
+
+		var counter = 0;
+		function receive_response(data)
+		{
+
+			if(data)
+			{
+				counter++;
+
+				if(counter == 2)
+				{
+					socket.emit('jump', data);
+				}
+			}
+			else
+			{
+				counter = 0;
+				alert("The request to jump has not reach an unanimous decision.");
+
+			}
+		}
+
+		socket.on('jump', function (data) {
+			receive_add(data);
+		});
+
+		/*var modalConfirm = function(callback){
+		  
+		  $("#btn-confirm").on("click", function(){
+		    $("#mi-modal").modal('show');
+		  });
+
+		  $("#modal-btn-si").on("click", function(){
+		    callback(true);
+		    $("#mi-modal").modal('hide');
+		  });
+		  
+		  $("#modal-btn-no").on("click", function(){
+		    callback(false);
+		    $("#mi-modal").modal('hide');
+		  });
+		};
+
+		modalConfirm(function(confirm){
+		  if(confirm){
+		    //Acciones si el usuario confirma
+		    $("#result").html("CONFIRMADO");
+		  }else{
+		    //Acciones si el usuario no confirma
+		    $("#result").html("NO CONFIRMADO");
+		  }
+		});*/
+		
 
 
 	</script>

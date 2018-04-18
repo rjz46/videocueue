@@ -41,6 +41,19 @@ io.on('connection', function (socket) {
     io.emit('minus', data );
   });
 
+  socket.on('request_jump', function (data) {
+    console.log(data); 
+    data.id = socket.id;
+    socket.broadcast.emit('request_jump', data );
+  });
+
+  socket.on('respond_jump', function (data) {
+    console.log(data); 
+    //io.sockets.sockets(data.id).emit('respond_jump', data.response); 
+    socket.broadcast.to(data.id).emit('response', data.response);
+
+  });
+
   socket.on('jump', function (data) {
     console.log(data);
     io.emit('jump', { data });
