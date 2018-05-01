@@ -11,5 +11,5 @@ define('DB_USER', 'CMC');
 define('DB_PASSWORD', 'hola'); 
 
 // The name of the database to which you want to connect
-define('DB_NAME', 'CMC');    
+define('DB_NAME', 'cmc');    
 ?>

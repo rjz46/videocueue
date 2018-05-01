@@ -42,21 +42,24 @@ io.on('connection', function (socket) {
   });
 
   socket.on('request_jump', function (data) {
-    console.log(data); 
+    console.log(data, "request_jump"); 
     data.id = socket.id;
     socket.broadcast.emit('request_jump', data );
   });
 
   socket.on('respond_jump', function (data) {
-    console.log(data); 
+    console.log(data, "respond_jump"); 
     //io.sockets.sockets(data.id).emit('respond_jump', data.response); 
-    socket.broadcast.to(data.id).emit('response', data.response);
+    socket.broadcast.to(data.id).emit('response', data);
 
   });
 
   socket.on('jump', function (data) {
-    console.log(data);
-    io.emit('jump', { data });
+    console.log(data, "jump");
+    data.queue_index = queue_index;
+    io.emit('jump', data );
+    queue_index++;
+
   });
 
 });

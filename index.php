@@ -20,7 +20,7 @@
 		var socket = io('http://ec2-54-183-146-210.us-west-1.compute.amazonaws.com:3000');
 	</script>
 
-</head>
+</head>			
 
 <style>
 	button .remove{
@@ -44,8 +44,9 @@
 
     .container {
     	height:100%;
-    	border: 2px solid #73AD21;
+    	border: 2px solid #0c5460;
    		border-radius: 5px;
+   		background: #e9ecef;
     }
 
     #top {
@@ -56,14 +57,14 @@
     #bottom {
 	    padding: 20px; 
 	    height: 80%; 
-	    background: white;
+	    background: #e9ecef;
 		border-radius: 30px;
 	}
 
 	.queue
 	{
 		border-radius: 5px;
-		background: white;
+		background: #e9ecef;
 	}
 
 	.mytext
@@ -72,6 +73,40 @@
 		display: inline-block;
   		vertical-align: middle;
 	}
+
+	.queue li:first-child{
+      background-color: rgb(0, 255, 0, .2);
+    }
+
+   	.queue li:first-child button{
+   		display:none;
+   	}
+
+
+    .queue li:nth-child(2){
+      background-color: rgb(255, 255, 102, .2);
+    }
+
+    .queue li {
+	  opacity: 0;
+	  transform: rotateX(-90deg);
+	  transition: all 0.5s cubic-bezier(.36,-0.64,.34,1.76);
+	}
+
+	.queue li.show {
+	  opacity: 1;
+	  transform: none;
+	  transition: all 0.5s cubic-bezier(.36,-0.64,.34,1.76);
+	}
+
+	.queue {
+ 		perspective: 100px;
+	}
+
+	h3 {
+		color: #0c5460;
+	}
+
 </style>
 <body>
 
@@ -79,7 +114,7 @@
 		
 		<div id="top">
 
-			<h3>Video Conference Queue Cue Support</h3>
+			<h3>Video Conference Cue Queue</h3>
 
 			<hr>
 
@@ -93,9 +128,9 @@
 				<div class="col">
 					<form action="update.php" method="post" id="form1">
 						<div style="float:right;" class="btn-group" role="group">
-					  		<button type="button" name="name" class="btn btn-outline-success" onclick="return send_add();"><i class="fas fa-angle-up"></i></button>
-					  		<button type="button" name="name" class="btn btn-outline-success" onclick="return request_jump();"><i class="fas fa-angle-double-up"></i></button>
-							<button type="button" id="next" class="btn btn-outline-primary"><i class="fas fa-angle-down"></i></button>
+					  		<button type="button" name="name" class="btn btn-outline-success" onclick="return send_add();"><i class="fas fa-angle-up"></i> Add to Queue </button>
+					  		<button type="button" name="name" class="btn btn-outline-success" onclick="return request_jump();"><i class="fas fa-angle-double-up"></i>  Request Jump </button>
+							<button type="button" id="next" class="btn btn-outline-primary"><i class="fas fa-angle-down"></i> Pass Turn </button>
 						</div>
 					</form>
 				</div>
@@ -196,29 +231,34 @@
     			alert("cannot add again, please wait");
     		}else{
 				
+				var newLI;
 				if(user == username)
 				{
-					var newLI = "<li id ='"+data.queue_index+"' class='list-group-item justify-content-between' name ='"+user+"'><span class = 'mytext'>"+user+"</span><span class='badge badge-default badge-pill '><button name ='"+user+"' value='Remove' class='btn btn-outline-danger remove'><i class='fas fa-ban'></i></button></span></span></li>";
+					newLI = $("<li id ='"+data.queue_index+"' class='list-group-item justify-content-between' name ='"+user+"'><span class = 'mytext'>"+user+"</span><span class='badge badge-default badge-pill '><button name ='"+user+"' value='Remove' class='btn btn-outline-danger remove'><i class='fas fa-ban'></i></button></span></span></li>");
 
 				 	$(".queue").append(newLI);
 
-  					setTimeout(function() {
-   						newLI.className = newLI.className + " show";
-  					}, 10);
+				 	console.log("trying to animate", newLI.attr('class'));
+
+	  				$.ajax({
+				        type: "POST",
+				        url: "updateAdd.php",
+				        data: {"name": user},
+				        success:function(){console.log("successful add")}
+			        });
+
+	    			console.log("add " + user);
 
 				}else{
 
-					$(".queue").append("<li id ='"+data.queue_index+"' class='list-group-item justify-content-between' name ='"+user+"'><span class = 'mytext'>"+user+"</span></li>");
+					newLI = $("<li id ='"+data.queue_index+"' class='list-group-item justify-content-between' name ='"+user+"'><span class = 'mytext'>"+user+"</span></li>");
+					
+					$(".queue").append(newLI);
 				}
 
-				$.ajax({
-			        type: "POST",
-			        url: "updateAdd.php",
-			        data: {"name": user},
-			        success:function(){console.log("successful add")}
-		        });
-
-	    		console.log("add " + user);
+				setTimeout(function() {
+					newLI.addClass( "show" );
+  				}, 10);
 	    	}
 
 		};
@@ -226,7 +266,12 @@
 		//remove
 		socket.on('minus', function (data) {
 			console.log(data);
-			$("#"+data).remove();
+			
+			setTimeout(function() {
+				$("#"+data).removeClass( "show" );
+			}, 10);
+
+			$("#"+data).one("transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd", function(){ this.remove() });
 		});
 
 		function send_remove(val){
@@ -287,29 +332,37 @@
 			socket.emit('pass');
 		}
 
-		//jump
+		//jump requests
 		socket.on('request_jump', function (data) {
 			receive_request(data);
 		});
 
 		function request_jump(){
-			socket.emit('request_jump', { username: username });
+
+			var user = username;
+
+			var myuser = $( ".queue li" ).first().attr('name');
+			var my2nduser = $( ".queue li:nth-child(2)" ).attr('name');
+
+    		if(user == myuser)
+    		{
+				alert('Cannot jump - You are already speaking.');
+    		}else if(user == my2nduser){
+    			alert('Cannot jump - You are already speaking next.');
+    		}
+    		else{
+				socket.emit('request_jump', { username: username });
+			}
 		}
 
-		socket.on('respond_jump', function (data) {
+		/*socket.on('respond_jump', function (data) {
 			receive_request(data);
-		});
+		});*/
 
 		function receive_request(data)
 		{
 			var answer = confirm(data.username + " has requested to speak next.");
-			/*if (answer) {
-			    socket.emit('respond_jump', { username: username });
 
-			}
-			else {
-			    socket.emit('respond_jump', { username: username });
-			}*/
 			data.response = answer;
 			send_response(data);
 
@@ -325,29 +378,99 @@
 		});
 
 		var counter = 0;
+		var yescounter = 0;
 		function receive_response(data)
 		{
-
-			if(data)
-			{
-				counter++;
-
-				if(counter == 2)
-				{
-					socket.emit('jump', data);
-				}
-			}
-			else
+			//test
+			counter++;
+			if(counter == 2)
 			{
 				counter = 0;
-				alert("The request to jump has not reach an unanimous decision.");
-
+				send_jump(data);
+				//socket.emit('jump', data);
 			}
+
+			/*
+
+			counter++;
+
+			if(data.response)
+			{
+				yescounter++;
+			}
+
+			if(counter == 2)
+			{
+			
+				if(yescounter == 2){
+					socket.emit('jump', data);
+				}
+				else
+				{
+					alert("The request to jump has not reach an unanimous decision.");
+				}
+
+				counter = 0;
+			}
+
+			*/
 		}
 
+		//jump!
 		socket.on('jump', function (data) {
-			receive_add(data);
+			receive_jump(data);
 		});
+
+		function send_jump(data){
+
+			var user = username;
+
+			var myuser = $( ".queue li" ).first().attr('name');
+			var my2nduser = $( ".queue li:nth-child(2)" ).attr('name');
+
+    		if(user == myuser)
+    		{
+				alert('Cannot jump - You are already speaking.');
+    		}else if(user == my2nduser){
+    			alert('Cannot jump - You are already speaking next.');
+    		}
+    		else{
+				socket.emit('jump', data);
+			}
+
+		}
+
+		function receive_jump(data){
+    		var user = data.username;    		
+			console.log(user);
+
+			var newLI;
+			if(user == username)
+			{
+				newLI = $("<li id ='"+data.queue_index+"' class='list-group-item justify-content-between' name ='"+user+"'><span class = 'mytext'>"+user+"</span><span class='badge badge-default badge-pill '><button name ='"+user+"' value='Remove' class='btn btn-outline-danger remove'><i class='fas fa-ban'></i></button></span></span></li>");
+			}else{
+
+				newLI = $("<li id ='"+data.queue_index+"' class='list-group-item justify-content-between' name ='"+user+"'><span class = 'mytext'>"+user+"</span></li>");
+			}
+
+			$(".queue li:nth-child(1)").after(newLI);
+
+
+			setTimeout(function() {
+				newLI.addClass( "show" );
+			}, 10);
+
+			/*$.ajax({
+		        type: "POST",
+		        url: "updateJump.php",
+		        data: {"name": user},
+		        success:function(){console.log("successful jump")}
+	        });
+
+	    		console.log("add " + user);
+	    	}*/
+
+		};
 
 		/*var modalConfirm = function(callback){
 		  

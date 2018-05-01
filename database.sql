@@ -25,7 +25,9 @@ CREATE TABLE `queue` (
   `ind` int(11) NOT NULL,
   `added` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `next` timestamp NULL DEFAULT NULL,
-  `removed` timestamp NULL DEFAULT NULL
+  `removed` timestamp NULL DEFAULT NULL,
+  `jumpfail` timestamp NULL DEFAULT NULL,
+  `jumppass` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
