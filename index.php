@@ -47,6 +47,7 @@
     	border: 2px solid #0c5460;
    		border-radius: 5px;
    		background: #e9ecef;
+   		width: 600px;
     }
 
     #top {
@@ -56,15 +57,18 @@
 
     #bottom {
 	    padding: 20px; 
-	    height: 80%; 
+	    height: 78%; 
 	    background: #e9ecef;
 		border-radius: 30px;
+    	border: 3px double #0c5460;
+    	overflow: auto;
+    	background-color: white;
 	}
 
 	.queue
 	{
 		border-radius: 5px;
-		background: #e9ecef;
+		//background: white;
 	}
 
 	.mytext
@@ -74,17 +78,20 @@
   		vertical-align: middle;
 	}
 
+	.queue li {
+		background-color: rgb(233, 236, 239, .3);;
+
+	}
 	.queue li:first-child{
-      background-color: rgb(0, 255, 0, .2);
+      background-color: rgb(0, 255, 0, .5);
     }
 
    	.queue li:first-child button{
    		display:none;
    	}
 
-
     .queue li:nth-child(2){
-      background-color: rgb(255, 255, 102, .2);
+      background-color: rgb(255, 255, 102, .3);
     }
 
     .queue li {
@@ -107,6 +114,9 @@
 		color: #0c5460;
 	}
 
+	#top .btn-group {
+		background-color: white;
+	}
 </style>
 <body>
 
@@ -114,7 +124,7 @@
 		
 		<div id="top">
 
-			<h3>Video Conference Cue Queue</h3>
+			<h3>Video Conference Queue</h3>
 
 			<hr>
 
@@ -182,15 +192,62 @@
 	  </div>
 	</div>
 
+	<div class="modal fade" id="nojump" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title" id="exampleModalLabel">Request Failed</h5>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+		     <p>The request to jump has not reach an unanimous decision.</p>  
+	      </div>
+	    </div>
+	  </div>
+	</div>
 
-	<!--button class="btn btn-default" id="btn-confirm">Confirm</button>
+	<div class="modal fade" id="nojumpsecond" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title" id="exampleModalLabel">Cannot Jump</h5>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+		     <p>You are already speaking next.</p>  
+	      </div>
+	    </div>
+	  </div>
+	</div>
+
+	<div class="modal fade" id="nojumpfirst" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title" id="exampleModalLabel">Cannot Jump</h5>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+		     <p>You are already speaking.</p>  
+	      </div>
+	    </div>
+	  </div>
+	</div>
 
 	<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true" id="mi-modal">
 	  <div class="modal-dialog modal-sm">
 	    <div class="modal-content">
 	      <div class="modal-header">
-	        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-	        <h4 class="modal-title" id="myModalLabel">Confirm</h4>
+	        <h4 class="modal-title" id="myModalLabel">Queue Jump Request</h4>
+	      </div>
+	      <div class="modal-body">
+		     <p><span id="usermode"></span> has requested to speak next. Do you agree to let him/her jump queue?</p>  
 	      </div>
 	      <div class="modal-footer">
 	        <button type="button" class="btn btn-default" id="modal-btn-si">Yes</button>
@@ -199,8 +256,6 @@
 	    </div>
 	  </div>
 	</div>
-
-	<div class="alert" role="alert" id="result"></div-->
 
 	<script>
 
@@ -228,7 +283,7 @@
 
     		if(user == myuser)
     		{
-    			alert("cannot add again, please wait");
+    			$("#repeat").modal("show");
     		}else{
 				
 				var newLI;
@@ -266,12 +321,8 @@
 		//remove
 		socket.on('minus', function (data) {
 			console.log(data);
-			
-			setTimeout(function() {
-				$("#"+data).removeClass( "show" );
-			}, 10);
-
-			$("#"+data).one("transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd", function(){ this.remove() });
+			$("#"+data).remove();
+			//$("#"+data).one("transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd", function(){ $("#"+data).remove() });
 		});
 
 		function send_remove(val){
@@ -346,11 +397,10 @@
 
     		if(user == myuser)
     		{
-				alert('Cannot jump - You are already speaking.');
+    			$("#nojumpfirst").modal("show");
     		}else if(user == my2nduser){
-    			alert('Cannot jump - You are already speaking next.');
-    		}
-    		else{
+    			$("#nojumpsecond").modal("show");
+    		}else{
 				socket.emit('request_jump', { username: username });
 			}
 		}
@@ -361,10 +411,17 @@
 
 		function receive_request(data)
 		{
-			var answer = confirm(data.username + " has requested to speak next.");
+			//var answer = confirm(data.username + " has requested to speak next.");
+			$("#usermode").html(data.username);
+			$('#mi-modal').modal({
+			    backdrop: 'static',
+			    keyboard: false
+			})
 
-			data.response = answer;
-			send_response(data);
+			modalConfirm(function(confirm){
+				data.response = confirm;
+				send_response(data);
+			});
 
 		}
 
@@ -382,15 +439,13 @@
 		function receive_response(data)
 		{
 			//test
-			counter++;
+			/*counter++;
 			if(counter == 2)
 			{
 				counter = 0;
 				send_jump(data);
 				//socket.emit('jump', data);
-			}
-
-			/*
+			}*/
 
 			counter++;
 
@@ -407,13 +462,14 @@
 				}
 				else
 				{
-					alert("The request to jump has not reach an unanimous decision.");
+					$("#cannotjump").modal("show");
 				}
 
 				counter = 0;
+				yescounter = 0;
 			}
 
-			*/
+		
 		}
 
 		//jump!
@@ -430,9 +486,9 @@
 
     		if(user == myuser)
     		{
-				alert('Cannot jump - You are already speaking.');
+    			$("#nojumpfirst").modal("show");
     		}else if(user == my2nduser){
-    			alert('Cannot jump - You are already speaking next.');
+    			$("#nojumpsecond").modal("show");
     		}
     		else{
 				socket.emit('jump', data);
@@ -472,11 +528,11 @@
 
 		};
 
-		/*var modalConfirm = function(callback){
+		var modalConfirm = function(callback){
 		  
 		  $("#btn-confirm").on("click", function(){
-		    $("#mi-modal").modal('show');
-		  });
+    		$("#mi-modal").modal('show');
+  		  });
 
 		  $("#modal-btn-si").on("click", function(){
 		    callback(true);
@@ -487,17 +543,8 @@
 		    callback(false);
 		    $("#mi-modal").modal('hide');
 		  });
-		};
 
-		modalConfirm(function(confirm){
-		  if(confirm){
-		    //Acciones si el usuario confirma
-		    $("#result").html("CONFIRMADO");
-		  }else{
-		    //Acciones si el usuario no confirma
-		    $("#result").html("NO CONFIRMADO");
-		  }
-		});*/
+		}
 		
 
 
