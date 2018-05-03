@@ -52,12 +52,12 @@
 
     #top {
 	    padding: 20px; 
-	    height: 20%; 
+	    //height: 20%; 
 	}
 
     #bottom {
 	    padding: 20px; 
-	    height: 78%; 
+	    height: 68%; 
 	    background: #e9ecef;
 		border-radius: 30px;
     	border: 3px double #0c5460;
@@ -73,9 +73,10 @@
 
 	.mytext
 	{
-		height: 50px;
-		display: inline-block;
-  		vertical-align: middle;
+		height: 40px;
+		font-family: sans-serif;
+		//display: inline-block;
+  		//vertical-align: middle;
 	}
 
 	.queue li {
@@ -117,36 +118,56 @@
 	#top .btn-group {
 		background-color: white;
 	}
+
+	#logo {
+		width:50%;
+		float:right;
+	}
+
+	#tag {
+		font-size: 50px;
+	}
+
+	.left {
+		margin:auto;
+	}
+
+	#usermode {
+		color: green;
+	}
+
 </style>
 <body>
 
 	<div class="container">
 		
 		<div id="top">
-
-			<h3>Video Conference Queue</h3>
-
+			<div class = "logorow row">
+				<div class="left col">
+					<div id = "tag">
+						<i class="fas fa-address-card"></i>
+						<span class='mytext'><?php echo $username; ?></span>
+					</div>
+				</div>
+				<div class="right col"><img id="logo" src="node_modules/logo.png"></div>
+			</div>
+			
 			<hr>
 
 			<div class = "row">
 				<div class="col">
-					<div>
-						<i class="fas fa-address-card" style="font-size:45px"></i>
-						<span class='mytext'><?php echo $username; ?></span>
-					</div>
-				</div>
-				<div class="col">
 					<form action="update.php" method="post" id="form1">
-						<div style="float:right;" class="btn-group" role="group">
-					  		<button type="button" name="name" class="btn btn-outline-success" onclick="return send_add();"><i class="fas fa-angle-up"></i> Add to Queue </button>
-					  		<button type="button" name="name" class="btn btn-outline-success" onclick="return request_jump();"><i class="fas fa-angle-double-up"></i>  Request Jump </button>
-							<button type="button" id="next" class="btn btn-outline-primary"><i class="fas fa-angle-down"></i> Pass Turn </button>
-						</div>
+						<center>
+							<div  class="btn-group" role="group">
+						  		<button type="button" name="name" class="btn btn-outline-success" onclick="return send_add();"><i class="fas fa-angle-up"></i> Add to Queue </button>
+						  		<button type="button" name="name" class="btn btn-outline-success" onclick="return request_jump();"><i class="fas fa-angle-double-up"></i>  Request Jump </button>
+								<button type="button" id="next" class="btn btn-outline-primary"><i class="fas fa-angle-down"></i> Pass Turn </button>
+							</div>
+						</center>
 					</form>
 				</div>
 			</div>
 		
-			<hr>
 
 		</div>
 		<div id="bottom">
@@ -244,7 +265,7 @@
 	  <div class="modal-dialog modal-sm">
 	    <div class="modal-content">
 	      <div class="modal-header">
-	        <h4 class="modal-title" id="myModalLabel">Queue Jump Request</h4>
+	        <h4 class="modal-title" id="myModalLabel">Jump Request</h4>
 	      </div>
 	      <div class="modal-body">
 		     <p><span id="usermode"></span> has requested to speak next. Do you agree to let him/her jump queue?</p>  
@@ -409,19 +430,20 @@
 			receive_request(data);
 		});*/
 
+		var datapackage;
+
 		function receive_request(data)
 		{
 			//var answer = confirm(data.username + " has requested to speak next.");
 			$("#usermode").html(data.username);
+
+			datapackage = data;
+
 			$('#mi-modal').modal({
 			    backdrop: 'static',
 			    keyboard: false
 			})
 
-			modalConfirm(function(confirm){
-				data.response = confirm;
-				send_response(data);
-			});
 
 		}
 
@@ -460,9 +482,8 @@
 				if(yescounter == 2){
 					socket.emit('jump', data);
 				}
-				else
-				{
-					$("#cannotjump").modal("show");
+				else{
+					$("#nojump").modal("show");
 				}
 
 				counter = 0;
@@ -529,10 +550,6 @@
 		};
 
 		var modalConfirm = function(callback){
-		  
-		  $("#btn-confirm").on("click", function(){
-    		$("#mi-modal").modal('show');
-  		  });
 
 		  $("#modal-btn-si").on("click", function(){
 		    callback(true);
@@ -545,6 +562,12 @@
 		  });
 
 		}
+
+		modalConfirm(function(confirm){
+			datapackage.response = confirm;
+			send_response(datapackage);
+			//console.log("hello, this is doing thing");
+		});
 		
 
 
